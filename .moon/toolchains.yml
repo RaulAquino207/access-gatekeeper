@@ -1,0 +1,14 @@
+# Configures the toolchains (languages, package managers) that moon manages
+# for the workspace. Docs: https://moonrepo.dev/docs/config/toolchains
+
+proto:
+  version: '0.58.2'
+
+javascript:
+  packageManager: 'pnpm'
+
+node:
+  version: '22.18.0'
+
+pnpm:
+  version: '11.10.0'

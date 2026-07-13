@@ -19,9 +19,10 @@ The repository is at the very start of **Phase 1A**. Only the scaffolding exists
   domain code yet).
 - `apps/web` (Angular), `infra/` (Kubernetes/LocalStack/Terraform), `Tiltfile`, `docker-compose.yml`, and the
   `packages/*` shared packages do not exist yet.
-- `.moon/workspace.yml` exists, but `.moon/toolchain.yml`, `.moon/tasks.yml`, and per-project `moon.yml` files do
-  not exist yet, so the `moon run` commands below are not runnable until that config is added. Moon is this
-  repo's task runner — use `moon run` as the target workflow, not ad-hoc `pnpm --filter`.
+- Moon (v2) is fully configured and is this repo's task runner — use `moon run`, not ad-hoc `pnpm --filter`.
+  Toolchains (node, pnpm) are in `.moon/toolchains.yml`; shared tasks are in `.moon/tasks/node.yml`, inherited by
+  every JavaScript project (`inheritedBy.toolchains`). `.prototools` pins proto and moon versions so the bare
+  `moon` binary matches the repo.
 
 Keep this section updated as the project evolves — future instances rely on it.
 
@@ -43,9 +44,8 @@ moon run api:test-cov           # jest with coverage
 moon run api:test-e2e           # jest e2e (test/jest-e2e.json)
 ```
 
-The same task set applies identically to `worker`. Until `.moon/toolchain.yml` / `.moon/tasks.yml` exist, the
-equivalent underlying commands can be run directly from inside `apps/api` or `apps/worker` (e.g. `pnpm start:dev`,
-`pnpm lint`, `pnpm test`) — see each app's `package.json` for the exact script names.
+The same task set applies identically to `worker`. Task definitions live in `.moon/tasks/node.yml`; per-project
+overrides go in an app-level `moon.yml` when needed.
 
 ```bash
 # single test file / single test name (run inside apps/api or apps/worker)
@@ -55,6 +55,15 @@ pnpm test -- -t "test name"
 
 Jest's `rootDir` is `src`, so spec files live next to the code they test (`*.spec.ts`), and e2e tests live in
 `test/`.
+
+Tooling constraints:
+
+- ESLint/Prettier config and their dependencies live at the **workspace root** (`eslint.config.mjs`,
+  `.prettierrc`); the apps do not have their own copies.
+- The root `typescript` must stay on the same major line as the apps (currently 5.x). A TypeScript 6.0.3 root
+  install silently broke type-aware lint rules (jest globals resolved as untyped, causing bogus `no-unsafe-*`
+  errors), and TypeScript 7 is outside typescript-eslint's peer range entirely. Upgrade root and apps together,
+  only when typescript-eslint / ts-jest / Nest support the new major.
 
 ## Architecture Rules
 

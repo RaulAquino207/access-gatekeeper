@@ -1,0 +1,67 @@
+# Tasks inherited by all JavaScript/TypeScript projects (currently the NestJS
+# api and worker apps). Projects can override or extend these in their own
+# moon.yml. Docs: https://moonrepo.dev/docs/config/tasks
+
+inheritedBy:
+  toolchains: ['javascript']
+
+fileGroups:
+  sources:
+    - 'src/**/*'
+  tests:
+    - 'src/**/*.spec.ts'
+    - 'test/**/*'
+  configs:
+    - 'tsconfig*.json'
+    - 'nest-cli.json'
+    - '/eslint.config.mjs'
+    - '/.prettierrc'
+
+implicitInputs:
+  - 'package.json'
+
+tasks:
+  dev:
+    command: 'nest start --watch'
+    preset: 'server'
+
+  build:
+    command: 'nest build'
+    inputs:
+      - '@group(sources)'
+      - '@group(configs)'
+    outputs:
+      - 'dist'
+
+  lint:
+    command: 'eslint "{src,test}/**/*.ts" --fix'
+    inputs:
+      - '@group(sources)'
+      - '@group(tests)'
+      - '/eslint.config.mjs'
+      - '/.prettierrc'
+
+  test:
+    command: 'jest'
+    inputs:
+      - '@group(sources)'
+      - '@group(tests)'
+      - '@group(configs)'
+
+  test-watch:
+    command: 'jest --watch'
+    preset: 'utility'
+
+  test-cov:
+    command: 'jest --coverage'
+    inputs:
+      - '@group(sources)'
+      - '@group(tests)'
+      - '@group(configs)'
+
+  test-e2e:
+    command: 'jest --config ./test/jest-e2e.json'
+    inputs:
+      - '@group(sources)'
+      - '@group(tests)'
+      - '@group(configs)'
