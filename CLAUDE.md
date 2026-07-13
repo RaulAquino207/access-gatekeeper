@@ -60,10 +60,12 @@ Tooling constraints:
 
 - ESLint/Prettier config and their dependencies live at the **workspace root** (`eslint.config.mjs`,
   `.prettierrc`); the apps do not have their own copies.
-- The root `typescript` must stay on the same major line as the apps (currently 5.x). A TypeScript 6.0.3 root
-  install silently broke type-aware lint rules (jest globals resolved as untyped, causing bogus `no-unsafe-*`
-  errors), and TypeScript 7 is outside typescript-eslint's peer range entirely. Upgrade root and apps together,
-  only when typescript-eslint / ts-jest / Nest support the new major.
+- The root `typescript` must stay on the same major line as the apps (currently 6.x, upgraded 2026-07 together
+  with `typescript-eslint` 8.63). TypeScript 6 no longer auto-includes `node_modules/@types` and requires an
+  explicit `rootDir` when `outDir` is set (TS5011), so the app tsconfigs declare `types: ["jest", "node"]` and
+  `rootDir: "."`, with `tsconfig.build.json` overriding `rootDir: "./src"` to keep the `dist/main.js` layout.
+  TypeScript 7 is still blocked: typescript-eslint's peer range is `<6.1.0` and ts-jest's is `<7`. Upgrade root
+  and apps together, only when typescript-eslint / ts-jest / Nest support the new major.
 
 ## Architecture Rules
 
