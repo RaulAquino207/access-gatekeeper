@@ -1,24 +1,9 @@
-# Tasks inherited by all JavaScript/TypeScript projects (currently the NestJS
-# api and worker apps). Projects can override or extend these in their own
-# moon.yml. Docs: https://moonrepo.dev/docs/config/tasks
+# Tasks owned by the worker project (NestJS). Universal conventions (file
+# groups, lint) are inherited from .moon/tasks/javascript.yml.
+# Docs: https://moonrepo.dev/docs/config/project
 
-inheritedBy:
-  toolchains: ['javascript']
-
-fileGroups:
-  sources:
-    - 'src/**/*'
-  tests:
-    - 'src/**/*.spec.ts'
-    - 'test/**/*'
-  configs:
-    - 'tsconfig*.json'
-    - 'nest-cli.json'
-    - '/eslint.config.mjs'
-    - '/.prettierrc'
-
-implicitInputs:
-  - 'package.json'
+language: 'typescript'
+layer: 'application'
 
 tasks:
   dev:
@@ -30,16 +15,9 @@ tasks:
     inputs:
       - '@group(sources)'
       - '@group(configs)'
+      - 'nest-cli.json'
     outputs:
       - 'dist'
-
-  lint:
-    command: 'eslint "{src,test}/**/*.ts" --fix'
-    inputs:
-      - '@group(sources)'
-      - '@group(tests)'
-      - '/eslint.config.mjs'
-      - '/.prettierrc'
 
   test:
     command: 'jest'

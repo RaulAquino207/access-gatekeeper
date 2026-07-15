@@ -1,5 +1,5 @@
 # Configures the toolchains (languages, package managers) that moon manages
-# for the workspace. Docs: https://moonrepo.dev/docs/config/toolchains
+# for the workspace. Docs: https://moonrepo.dev/docs/config/toolchain
 
 proto:
   version: '0.58.2'

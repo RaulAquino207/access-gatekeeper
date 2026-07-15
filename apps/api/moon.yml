@@ -1,0 +1,45 @@
+# Tasks owned by the api project (NestJS). Universal conventions (file
+# groups, lint) are inherited from .moon/tasks/javascript.yml.
+# Docs: https://moonrepo.dev/docs/config/project
+
+language: 'typescript'
+layer: 'application'
+
+tasks:
+  dev:
+    command: 'nest start --watch'
+    preset: 'server'
+
+  build:
+    command: 'nest build'
+    inputs:
+      - '@group(sources)'
+      - '@group(configs)'
+      - 'nest-cli.json'
+    outputs:
+      - 'dist'
+
+  test:
+    command: 'jest'
+    inputs:
+      - '@group(sources)'
+      - '@group(tests)'
+      - '@group(configs)'
+
+  test-watch:
+    command: 'jest --watch'
+    preset: 'utility'
+
+  test-cov:
+    command: 'jest --coverage'
+    inputs:
+      - '@group(sources)'
+      - '@group(tests)'
+      - '@group(configs)'
+
+  test-e2e:
+    command: 'jest --config ./test/jest-e2e.json'
+    inputs:
+      - '@group(sources)'
+      - '@group(tests)'
+      - '@group(configs)'

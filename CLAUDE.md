@@ -20,9 +20,12 @@ The repository is at the very start of **Phase 1A**. Only the scaffolding exists
 - `apps/web` (Angular), `infra/` (Kubernetes/LocalStack/Terraform), `Tiltfile`, `docker-compose.yml`, and the
   `packages/*` shared packages do not exist yet.
 - Moon (v2) is fully configured and is this repo's task runner — use `moon run`, not ad-hoc `pnpm --filter`.
-  Toolchains (node, pnpm) are in `.moon/toolchains.yml`; shared tasks are in `.moon/tasks/node.yml`, inherited by
-  every JavaScript project (`inheritedBy.toolchains`). `.prototools` pins proto and moon versions so the bare
-  `moon` binary matches the repo.
+  Toolchains (node, pnpm) are in `.moon/toolchains.yml`. Task philosophy is **minimal inheritance**:
+  `.moon/tasks/javascript.yml` holds only what is universal to every JavaScript project (file groups,
+  `implicitInputs`, the `lint` task — ESLint config lives at the workspace root); framework-specific tasks
+  (`dev`, `build`, `test*` — all Nest-flavored) live in each app's own `moon.yml`. Keep it this way: the future
+  Angular `apps/web` must not inherit Nest tasks. `.prototools` pins proto and moon versions so the bare `moon`
+  binary matches the repo.
 
 Keep this section updated as the project evolves — future instances rely on it.
 
@@ -44,8 +47,9 @@ moon run api:test-cov           # jest with coverage
 moon run api:test-e2e           # jest e2e (test/jest-e2e.json)
 ```
 
-The same task set applies identically to `worker`. Task definitions live in `.moon/tasks/node.yml`; per-project
-overrides go in an app-level `moon.yml` when needed.
+The same task set applies identically to `worker`. App tasks are defined in `apps/<app>/moon.yml`; only `lint`
+and shared file groups are inherited from `.moon/tasks/javascript.yml` (in moon v2 the filename is a label —
+the real scoping is the file's `inheritedBy.toolchains` setting).
 
 ```bash
 # single test file / single test name (run inside apps/api or apps/worker)
@@ -66,6 +70,9 @@ Tooling constraints:
   `rootDir: "."`, with `tsconfig.build.json` overriding `rootDir: "./src"` to keep the `dist/main.js` layout.
   TypeScript 7 is still blocked: typescript-eslint's peer range is `<6.1.0` and ts-jest's is `<7`. Upgrade root
   and apps together, only when typescript-eslint / ts-jest / Nest support the new major.
+- Do not add `incremental: true` to the app tsconfigs. It writes a `.tsbuildinfo` outside `dist/` that survives
+  Nest's `deleteOutDir: true`, so a rebuild trusts stale state and emits an empty `dist/` while exiting 0 (moon
+  catches it as `missing_outputs`). Moon's input-hash cache already covers skip-if-unchanged, correctly.
 
 ## Architecture Rules
 

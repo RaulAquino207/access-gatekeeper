@@ -1,0 +1,30 @@
+# Conventions inherited by all JavaScript/TypeScript projects. Only what is
+# truly universal lives here (file groups, root lint); framework-specific
+# tasks belong in each project's moon.yml.
+# Docs: https://moonrepo.dev/docs/config/tasks
+
+inheritedBy:
+  toolchains: ['javascript']
+
+fileGroups:
+  sources:
+    - 'src/**/*'
+  tests:
+    - 'src/**/*.spec.ts'
+    - 'test/**/*'
+  configs:
+    - 'tsconfig*.json'
+    - '/eslint.config.mjs'
+    - '/.prettierrc'
+
+implicitInputs:
+  - 'package.json'
+
+tasks:
+  lint:
+    command: 'eslint "{src,test}/**/*.ts" --fix'
+    inputs:
+      - '@group(sources)'
+      - '@group(tests)'
+      - '/eslint.config.mjs'
+      - '/.prettierrc'
