@@ -41,10 +41,10 @@ moon run worker:dev             # run worker with watch mode
 
 moon run api:build              # nest build
 moon run api:lint               # eslint --fix
-moon run api:test               # jest unit tests
-moon run api:test-watch         # jest watch mode
-moon run api:test-cov           # jest with coverage
-moon run api:test-e2e           # jest e2e (test/jest-e2e.json)
+moon run api:test               # vitest unit tests
+moon run api:test-watch         # vitest watch mode
+moon run api:test-cov           # vitest with v8 coverage
+moon run api:test-e2e           # vitest e2e (vitest.config.e2e.ts)
 ```
 
 The same task set applies identically to `worker`. App tasks are defined in `apps/<app>/moon.yml`; only `lint`
@@ -57,8 +57,10 @@ pnpm test -- app.controller.spec.ts
 pnpm test -- -t "test name"
 ```
 
-Jest's `rootDir` is `src`, so spec files live next to the code they test (`*.spec.ts`), and e2e tests live in
-`test/`.
+Tests run on Vitest (`vitest.config.ts` for unit, `vitest.config.e2e.ts` for e2e, per app). Spec files live
+next to the code they test (`src/**/*.spec.ts`); e2e tests live in `test/**/*.e2e-spec.ts`. No test globals:
+specs import `describe`/`it`/`expect` explicitly from `'vitest'` (deliberate choice — do not reintroduce
+`globals: true` / `types: ["vitest/globals"]`).
 
 Tooling constraints:
 
@@ -66,10 +68,16 @@ Tooling constraints:
   `.prettierrc`); the apps do not have their own copies.
 - The root `typescript` must stay on the same major line as the apps (currently 6.x, upgraded 2026-07 together
   with `typescript-eslint` 8.63). TypeScript 6 no longer auto-includes `node_modules/@types` and requires an
-  explicit `rootDir` when `outDir` is set (TS5011), so the app tsconfigs declare `types: ["jest", "node"]` and
-  `rootDir: "."`, with `tsconfig.build.json` overriding `rootDir: "./src"` to keep the `dist/main.js` layout.
-  TypeScript 7 is still blocked: typescript-eslint's peer range is `<6.1.0` and ts-jest's is `<7`. Upgrade root
-  and apps together, only when typescript-eslint / ts-jest / Nest support the new major.
+  explicit `rootDir` when `outDir` is set (TS5011), so the app tsconfigs declare `types: ["node",
+  "vitest/globals"]` and `rootDir: "."`, with `tsconfig.build.json` overriding `rootDir: "./src"` to keep the
+  `dist/main.js` layout (and excluding `vitest.config*.ts`, which sit outside `src/`). TypeScript 7 is still
+  blocked by typescript-eslint's peer range (`<6.1.0`). Upgrade root and apps together, only when
+  typescript-eslint / Nest support the new major.
+- The `swc.vite(...)` plugin in the `vitest.config*.ts` files is load-bearing, not optional. Vitest's default
+  transformer (esbuild/Oxc) cannot emit decorator metadata (`design:paramtypes`), which Nest DI,
+  `ValidationPipe`, and class-transformer read at runtime — without SWC's `decoratorMetadata: true`, DI fails
+  loudly in tests and request validation is skipped *silently*. Keep the SWC options in sync with the decorator
+  settings in `tsconfig.json` (SWC does not read tsconfig).
 - Do not add `incremental: true` to the app tsconfigs. It writes a `.tsbuildinfo` outside `dist/` that survives
   Nest's `deleteOutDir: true`, so a rebuild trusts stale state and emits an empty `dist/` while exiting 0 (moon
   catches it as `missing_outputs`). Moon's input-hash cache already covers skip-if-unchanged, correctly.

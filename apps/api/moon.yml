@@ -20,26 +20,29 @@ tasks:
       - 'dist'
 
   test:
-    command: 'jest'
+    command: 'vitest run'
     inputs:
       - '@group(sources)'
       - '@group(tests)'
       - '@group(configs)'
+      - 'vitest.config.ts'
 
   test-watch:
-    command: 'jest --watch'
+    command: 'vitest'
     preset: 'utility'
 
   test-cov:
-    command: 'jest --coverage'
+    command: 'vitest run --coverage'
     inputs:
       - '@group(sources)'
       - '@group(tests)'
       - '@group(configs)'
+      - 'vitest.config.ts'
 
   test-e2e:
-    command: 'jest --config ./test/jest-e2e.json'
+    command: 'vitest run --config ./vitest.config.e2e.ts'
     inputs:
       - '@group(sources)'
       - '@group(tests)'
       - '@group(configs)'
+      - 'vitest.config.e2e.ts'
