@@ -8,7 +8,10 @@ javascript:
   packageManager: 'pnpm'
 
 node:
-  version: '22.18.0'
+  version: '24.15.0'
+  # Should keep .nvmrc in sync with the version above, but moon 2.4 does not
+  # fire the sync yet — when bumping the version, update .nvmrc manually too.
+  syncVersionManagerConfig: 'nvm'
 
 pnpm:
   version: '11.10.0'
