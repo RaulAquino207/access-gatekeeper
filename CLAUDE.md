@@ -106,6 +106,22 @@ Controller -> Use Case / Handler -> Domain Model -> Ports -> Infrastructure Adap
 SQS, HTTP calls to the worker/API); `pipe` to compose use-case flows. Errors are modeled explicitly as domain
 error types, not thrown exceptions, across application/infrastructure boundaries.
 
+**Dependency injection — ports & tokens** — the application layer depends on **interfaces**, never on concrete
+adapters. Since TypeScript interfaces vanish at runtime, wire them through Nest injection tokens (this is the
+Dependency Inversion mechanism that keeps `application` unaware of `infrastructure`):
+
+- Each port declares its **interface and its token in the same file** under `application/ports/`. Interface is
+  `PascalCase` (`AccessRequestRepository`); token is `SCREAMING_SNAKE` and a **`Symbol`**, not a string
+  (`export const ACCESS_REQUEST_REPOSITORY = Symbol('AccessRequestRepository')`). `Symbol` is collision-proof —
+  two features can never clash on a shared string token, and consumers must import the token, which makes the
+  dependency explicit.
+- Consumers inject by token, typed by the interface: `@Inject(ACCESS_REQUEST_REPOSITORY) private readonly repo:
+  AccessRequestRepository`. Never inject an adapter class directly.
+- The concrete binding (`{ provide: ACCESS_REQUEST_REPOSITORY, useClass: DynamoDbAccessRequestRepository }`)
+  lives **only** in the feature's `.module.ts`. That is the single point where an implementation is chosen —
+  swapping adapters (e.g. an in-memory fake for tests) is a one-line `useClass` change, and the new class only
+  needs to `implements` the interface. No domain, application, or presentation code changes.
+
 **Feature-first layout** — feature code lives close to its owning module, split by layer:
 `apps/api/src/access-requests/{domain,application,infrastructure,presentation}`. Only extract to
 `packages/domain|application|infrastructure` when code is genuinely reused across API and worker, and do so
