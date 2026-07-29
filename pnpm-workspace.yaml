@@ -1,5 +1,5 @@
 packages:
-  - "apps/*"
+  - 'apps/*'
 allowBuilds:
   '@swc/core': true
   unrs-resolver: true

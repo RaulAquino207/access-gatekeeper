@@ -4,8 +4,8 @@ import { AppService } from './app.service';
 import { AccessRequestsModule } from './access-requests/access-requests.module';
 
 @Module({
-  imports: [AccessRequestsModule],
-  controllers: [AppController],
-  providers: [AppService],
+    imports: [AccessRequestsModule],
+    controllers: [AppController],
+    providers: [AppService],
 })
 export class AppModule {}

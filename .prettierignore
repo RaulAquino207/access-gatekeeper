@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+
+# Test / coverage artifacts
+coverage/
+**/coverage/
+
+# Tooling caches
+.moon/cache/
+
+# Lockfiles (managed by the package manager, not by us)
+pnpm-lock.yaml

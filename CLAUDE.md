@@ -69,14 +69,14 @@ Tooling constraints:
 - The root `typescript` must stay on the same major line as the apps (currently 6.x, upgraded 2026-07 together
   with `typescript-eslint` 8.63). TypeScript 6 no longer auto-includes `node_modules/@types` and requires an
   explicit `rootDir` when `outDir` is set (TS5011), so the app tsconfigs declare `types: ["node",
-  "vitest/globals"]` and `rootDir: "."`, with `tsconfig.build.json` overriding `rootDir: "./src"` to keep the
+"vitest/globals"]` and `rootDir: "."`, with `tsconfig.build.json` overriding `rootDir: "./src"` to keep the
   `dist/main.js` layout (and excluding `vitest.config*.ts`, which sit outside `src/`). TypeScript 7 is still
   blocked by typescript-eslint's peer range (`<6.1.0`). Upgrade root and apps together, only when
   typescript-eslint / Nest support the new major.
 - The `swc.vite(...)` plugin in the `vitest.config*.ts` files is load-bearing, not optional. Vitest's default
   transformer (esbuild/Oxc) cannot emit decorator metadata (`design:paramtypes`), which Nest DI,
   `ValidationPipe`, and class-transformer read at runtime — without SWC's `decoratorMetadata: true`, DI fails
-  loudly in tests and request validation is skipped *silently*. Keep the SWC options in sync with the decorator
+  loudly in tests and request validation is skipped _silently_. Keep the SWC options in sync with the decorator
   settings in `tsconfig.json` (SWC does not read tsconfig).
 - Do not add `incremental: true` to the app tsconfigs. It writes a `.tsbuildinfo` outside `dist/` that survives
   Nest's `deleteOutDir: true`, so a rebuild trusts stale state and emits an empty `dist/` while exiting 0 (moon
@@ -116,7 +116,7 @@ Dependency Inversion mechanism that keeps `application` unaware of `infrastructu
   two features can never clash on a shared string token, and consumers must import the token, which makes the
   dependency explicit.
 - Consumers inject by token, typed by the interface: `@Inject(ACCESS_REQUEST_REPOSITORY) private readonly repo:
-  AccessRequestRepository`. Never inject an adapter class directly.
+AccessRequestRepository`. Never inject an adapter class directly.
 - The concrete binding (`{ provide: ACCESS_REQUEST_REPOSITORY, useClass: DynamoDbAccessRequestRepository }`)
   lives **only** in the feature's `.module.ts`. That is the single point where an implementation is chosen —
   swapping adapters (e.g. an in-memory fake for tests) is a one-line `useClass` change, and the new class only
